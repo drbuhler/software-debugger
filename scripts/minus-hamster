@@ -1,0 +1,39 @@
+#!/bin/bash
+# Asks Software Debugger to show its removal question.
+# This does not need Accessibility or Input Monitoring.
+# It does not delete anything by itself. The app asks first.
+
+set -euo pipefail
+
+APP_NAME="Software-Debugger-4.2-hmst.app"
+URL="swdebug://uninstall"
+
+candidates=(
+  "/Applications/${APP_NAME}"
+  "${HOME}/Applications/${APP_NAME}"
+)
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+candidates+=("${SCRIPT_DIR}/../dist/${APP_NAME}")
+
+found=""
+for candidate in "${candidates[@]}"; do
+  if [[ -d "${candidate}" ]]; then
+    found="${candidate}"
+    break
+  fi
+done
+
+if [[ -n "${found}" ]]; then
+  open -a "${found}" "${URL}"
+  exit 0
+fi
+
+# Launch Services may already know the app, even if it is not in Applications.
+if open "${URL}" >/dev/null 2>&1; then
+  exit 0
+fi
+
+echo "Software Debugger is not in Applications, and there is no built app in dist/."
+echo "If a copy is somewhere else, open that copy, then run this command again."
+exit 1
