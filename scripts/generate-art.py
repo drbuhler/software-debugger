@@ -14,6 +14,8 @@ from pathlib import Path
 
 from PIL import Image, ImageChops, ImageDraw
 
+from render_lifelike import RUN_COUNT, render_pointer, render_run_cycle
+
 ROOT = Path(__file__).resolve().parents[1]
 RES = ROOT / "Sources" / "HamsterInfestation" / "Resources"
 ICON = ROOT / "packaging" / "AppIcon.iconset"
@@ -436,10 +438,10 @@ def main():
     RES.mkdir(parents=True, exist_ok=True)
     DOCS.mkdir(parents=True, exist_ok=True)
 
-    runners = [render_runner(i) for i in range(6)]
+    runners = render_run_cycle()
     waves = [render_wave(i) for i in range(4)]
     sprites = {
-        "cursor": render_cursor(),
+        "cursor": render_pointer(),
         "peek": render_peek("open"),
         "peek_blink": render_peek("blink"),
         "peek_sleep": render_peek("shut"),
@@ -484,7 +486,8 @@ def main():
     save_iconset()
     render_icon(256).save(DOCS / "preview-icon.png")
     preview(sprites).convert("RGB").save(DOCS / "preview-desktop.png", quality=92)
-    sheet(runners, 6, (180, 120)).save(DOCS / "preview-run.png")
+    cell_w, cell_h = runners[0].size
+    sheet(runners, RUN_COUNT, (cell_w // 2, cell_h // 2)).save(DOCS / "preview-run.png")
     sheet([sprites["peek"], sprites["peek_blink"], sprites["peek_sleep"], sprites["sad"], sprites["cursor"]], 5, (160, 160)).save(DOCS / "preview-faces.png")
     print(f"Art written to {RES}")
     print(f"Icon set written to {ICON}")

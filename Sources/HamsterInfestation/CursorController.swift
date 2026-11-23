@@ -18,9 +18,11 @@ final class CursorController {
     private var receivedGlobalMouseMove = false
     private var hiddenDisplays: [CGDirectDisplayID] = []
     private let pointSize = NSSize(width: 40, height: 40)
-    /// Hotspot, measured from the top-left of the picture. The paw tip lives there.
-    private let hotX: CGFloat = 4
-    private let hotFromTop: CGFloat = 4
+    /// Paw-tip hotspot, from the top-left, in points.
+    /// The picture is 180 pixels and shown at 40 points, and the claw is at pixel (20, 18).
+    /// scripts/render_lifelike.py keeps those two numbers together.
+    private let hotX: CGFloat = 20.0 * 40.0 / 180.0
+    private let hotFromTop: CGFloat = 18.0 * 40.0 / 180.0
 
     func start() {
         installMonitorsIfNeeded()
@@ -128,31 +130,32 @@ final class CursorController {
             terminating: terminating
         )
         guard decision.showFollower else { return }
-        let frame = NSRect(
+        let origin = NSPoint(
             x: location.x - hotX,
-            y: location.y - (pointSize.height - hotFromTop),
-            width: pointSize.width,
-            height: pointSize.height
+            y: location.y - (pointSize.height - hotFromTop)
         )
-        let window: OverlayWindow
-        if let follower {
-            window = follower
-        } else {
-            let created = OverlayWindow(
-                frame: frame,
-                clickThrough: true,
-                level: WindowLayers.follower,
-                behavior: WindowLayers.aboveApps
-            )
-            let view = NSImageView(frame: NSRect(origin: .zero, size: pointSize))
-            view.imageScaling = .scaleProportionallyUpOrDown
-            view.image = ImageStore.image(named: Sprite.cursor, pointSize: pointSize)
-            created.contentView = view
-            follower = created
-            window = created
+        if let window = follower {
+            let current = window.frame.origin
+            // Skip sub-pixel jitter. The paw stays on the click point; it does not lag behind it.
+            if abs(current.x - origin.x) < 0.35 && abs(current.y - origin.y) < 0.35 {
+                return
+            }
+            window.setFrameOrigin(origin)
+            return
         }
-        window.setFrame(frame, display: true)
-        window.orderFrontRegardless()
+        let frame = NSRect(origin: origin, size: pointSize)
+        let created = OverlayWindow(
+            frame: frame,
+            clickThrough: true,
+            level: WindowLayers.follower,
+            behavior: WindowLayers.aboveApps
+        )
+        let view = NSImageView(frame: NSRect(origin: .zero, size: pointSize))
+        view.imageScaling = .scaleProportionallyUpOrDown
+        view.image = ImageStore.image(named: Sprite.cursor, pointSize: pointSize)
+        created.contentView = view
+        created.orderFrontRegardless()
+        follower = created
     }
 
     private func hideSystemCursor() {

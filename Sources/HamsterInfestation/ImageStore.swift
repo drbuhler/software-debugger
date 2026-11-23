@@ -15,7 +15,9 @@ enum Sprite {
     static let burrow = "ui-burrow"
     static let popupGIF = "ui-popup"
 
-    static func run(_ index: Int) -> String { "ui-run-\(abs(index) % 6)" }
+    /// Eight pre-rendered steps of one stride. See scripts/render_lifelike.py.
+    static let runFrameCount = 8
+    static func run(_ index: Int) -> String { "ui-run-\(abs(index) % runFrameCount)" }
     static func wave(_ index: Int) -> String { "ui-wave-\(abs(index) % 4)" }
 }
 
@@ -37,7 +39,7 @@ enum ImageStore {
     private static var flippedRuns: [Int: NSImage] = [:]
 
     static func flippedRunFrame(_ index: Int, pointSize: NSSize) -> NSImage {
-        let slot = abs(index) % 6
+        let slot = abs(index) % Sprite.runFrameCount
         if let cached = flippedRuns[slot] {
             return cached
         }

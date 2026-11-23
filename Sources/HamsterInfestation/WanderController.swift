@@ -15,7 +15,7 @@ final class WanderController {
         let visible = screen.visibleFrame
         guard visible.width > 40, visible.height > 40 else { return false }
         let goingRight = Bool.random()
-        let size = NSSize(width: 150, height: 100)
+        let size = NSSize(width: 220, height: 138)
         let low = visible.minY + 20
         let high = max(low, visible.maxY - size.height - 20)
         let y = low == high ? low : CGFloat.random(in: low...high)
@@ -103,9 +103,10 @@ private final class Mover {
             self.distance += step
             var frame = self.window.frame
             frame.origin.x += self.goingRight ? step : -step
-            frame.origin.y = self.baseY + CGFloat(sin(Double(self.distance / 26))) * 6
+            // The frames already bob the head. This is only a small rise and fall of the whole body.
+            frame.origin.y = self.baseY + CGFloat(sin(Double(self.distance / 28))) * 2.5
             self.window.setFrame(frame, display: false)
-            let index = Int(self.distance / 16) % 6
+            let index = Int(self.distance / 12) % Sprite.runFrameCount
             if index != self.frameIndex {
                 self.frameIndex = index
                 self.view.image = image(index, self.goingRight, frame.size)
