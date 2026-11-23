@@ -5,8 +5,10 @@ import HamsterCore
 /// The window opened by double-clicking the corner hamster.
 /// The title says Software Debugger. The text says what is actually going on.
 final class SettingsController: NSObject, NSWindowDelegate {
-    var pace: () -> HamsterPace = { .normal }
-    var setPace: (HamsterPace) -> Void = { _ in }
+    var onScreenCount: () -> Int = { 3 }
+    var setOnScreenCount: (Int) -> Void = { _ in }
+    var saveNow: () -> String = { "Saved." }
+    var closeWindow: () -> Void = {}
     var isPaused: () -> Bool = { false }
     var pausedDescription: () -> String = { "" }
     var togglePause: () -> Void = {}
@@ -23,7 +25,8 @@ final class SettingsController: NSObject, NSWindowDelegate {
 
     private var window: NSWindow?
     private var intro: NSWindow?
-    private var paceSlider: NSSlider?
+    private var countSlider: NSSlider?
+    private var countLabel: NSTextField?
     private var pauseButton: NSButton?
     private var loginCheck: NSButton?
     private var pointerCheck: NSButton?
@@ -88,11 +91,12 @@ final class SettingsController: NSObject, NSWindowDelegate {
     }
 
     func refresh() {
-        paceSlider?.doubleValue = pace().index
-        if isPaused() {
-            pauseButton?.title = "Wake the hamsters"
-        } else {
-            pauseButton?.title = "Pause hamsters for 1 hour"
+        let count = min(HamsterSettings.maximumOnScreen, max(HamsterSettings.minimumOnScreen, onScreenCount()))
+        countSlider?.doubleValue = Double(count)
+        countLabel?.stringValue = "Hamsters on screen: \(count)"
+        let pauseTitle = isPaused() ? "Wake the hamsters" : "Pause hamsters for 1 hour"
+        if let pauseButton {
+            LabeledButton.applyTitle(pauseTitle, to: pauseButton)
         }
         loginCheck?.state = launchAtLogin() ? .on : .off
         pointerCheck?.state = hamsterPointer() ? .on : .off
@@ -129,26 +133,33 @@ final class SettingsController: NSObject, NSWindowDelegate {
             weight: .regular
         ), gap: 14)
 
-        column.add(fitted("How often they visit", size: 15, weight: .semibold), gap: 4)
-        let slider = NSSlider(value: pace().index, minValue: 0, maxValue: 2, target: self, action: #selector(paceChanged))
-        slider.numberOfTickMarks = 3
+        let countLabel = fitted("Hamsters on screen: \(onScreenCount())", size: 15, weight: .semibold)
+        self.countLabel = countLabel
+        column.add(countLabel, gap: 4)
+        let slider = NSSlider(
+            value: Double(onScreenCount()),
+            minValue: Double(HamsterSettings.minimumOnScreen),
+            maxValue: Double(HamsterSettings.maximumOnScreen),
+            target: self,
+            action: #selector(countChanged)
+        )
+        slider.numberOfTickMarks = HamsterSettings.maximumOnScreen
         slider.allowsTickMarkValuesOnly = true
         slider.isContinuous = true
-        paceSlider = slider
-        column.add(slider, height: 28, gap: 2)
-        column.add(fitted("Chill          Normal          Chaos", size: 12, weight: .medium, color: Theme.muted), gap: 12)
+        countSlider = slider
+        column.add(slider, height: 28, gap: 12)
 
         let pause = button("Pause hamsters for 1 hour", action: #selector(pauseClicked))
         pauseButton = pause
         column.add(pause, height: 30)
 
         let pointer = NSButton(checkboxWithTitle: "Hamster pointer", target: self, action: #selector(pointerClicked))
-        pointer.font = Theme.font(size: 13, weight: .regular)
+        LabeledButton.applyCheckboxTitle("Hamster pointer", to: pointer)
         pointerCheck = pointer
         column.add(pointer, height: 22)
 
         let login = NSButton(checkboxWithTitle: "Start when I log in", target: self, action: #selector(loginClicked))
-        login.font = Theme.font(size: 13, weight: .regular)
+        LabeledButton.applyCheckboxTitle("Start when I log in", to: login)
         loginCheck = login
         column.add(login, height: 22, gap: 12)
 
@@ -164,7 +175,9 @@ final class SettingsController: NSObject, NSWindowDelegate {
         column.add(button("Allow Accessibility…", action: #selector(accessClicked)), height: 30)
         column.add(button("Install the minus-hamster command", action: #selector(installClicked)), height: 30)
         column.add(button("Remove Software Debugger…", action: #selector(removeClicked)), height: 30)
-        column.add(button("Quit for now", action: #selector(quitClicked)), height: 30, gap: 8)
+        column.add(button("Quit for now", action: #selector(quitClicked)), height: 32)
+        column.add(button("Save", action: #selector(saveClicked)), height: 32)
+        column.add(button("Close", action: #selector(closeClicked)), height: 32, gap: 8)
         let status = fitted(" ", size: 12, weight: .regular, color: Theme.muted)
         statusLabel = status
         column.add(status, gap: 0)
@@ -188,10 +201,11 @@ final class SettingsController: NSObject, NSWindowDelegate {
     }
 
     private func button(_ title: String, action: Selector) -> NSButton {
-        let button = NSButton(title: title, target: self, action: action)
-        button.bezelStyle = .rounded
-        button.font = Theme.font(size: 13, weight: .semibold)
-        return button
+        LabeledButton.push(title, target: self, action: action)
+    }
+
+    func close() {
+        window?.close()
     }
 
     private func size(_ column: ColumnView, onto window: NSWindow) {
@@ -201,9 +215,19 @@ final class SettingsController: NSObject, NSWindowDelegate {
         window.contentView = column
     }
 
-    @objc private func paceChanged() {
-        guard let paceSlider else { return }
-        setPace(HamsterPace(sliderValue: paceSlider.doubleValue))
+    @objc private func countChanged() {
+        guard let countSlider else { return }
+        let count = Int(countSlider.doubleValue.rounded())
+        countLabel?.stringValue = "Hamsters on screen: \(count)"
+        setOnScreenCount(count)
+    }
+
+    @objc private func saveClicked() {
+        statusLabel?.stringValue = saveNow()
+    }
+
+    @objc private func closeClicked() {
+        closeWindow()
     }
 
     @objc private func pauseClicked() {

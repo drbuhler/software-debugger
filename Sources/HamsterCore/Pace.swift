@@ -28,6 +28,23 @@ public enum HamsterPace: String, Codable, CaseIterable, Equatable {
         default: self = .chaos
         }
     }
+
+    /// Used when an older settings file has pace but no on-screen count.
+    public var suggestedOnScreenCount: Int {
+        switch self {
+        case .chill: return 1
+        case .normal: return 3
+        case .chaos: return 6
+        }
+    }
+
+    public static func matching(onScreenCount count: Int) -> HamsterPace {
+        switch count {
+        case ...2: return .chill
+        case 3...4: return .normal
+        default: return .chaos
+        }
+    }
 }
 
 public enum SpawnKind: String, Codable, CaseIterable, Equatable {

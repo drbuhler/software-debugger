@@ -347,11 +347,29 @@ final class SafetyTests: XCTestCase {
         XCTAssertEqual(loaded.hamsterPointer, false)
         XCTAssertEqual(loaded.burrows.count, 1)
         XCTAssertEqual(loaded.shavingCount, 4)
+        XCTAssertEqual(loaded.onScreenCount, HamsterPace.chaos.suggestedOnScreenCount)
         XCTAssertEqual(loaded.pausedUntil, until)
         XCTAssertEqual(SettingsStore.load(from: directory.appendingPathComponent("missing.json")).pace, .normal)
         settings.pace = .chill
         try? SettingsStore.save(settings, to: url)
         XCTAssertEqual(SettingsStore.load(from: url).pace, .chill)
+        try? FileManager.default.removeItem(at: directory)
+    }
+
+    func testOldPaceFileStillChoosesACount() throws {
+        let directory = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("hamster-old-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let url = directory.appendingPathComponent("state.json")
+        let old = """
+        {"burrows":[],"explainedAccessibility":false,"hamsterPointer":true,"launchAtLogin":false,"pace":"chill","shavingCount":0}
+        """
+        try old.write(to: url, atomically: true, encoding: .utf8)
+        let loaded = SettingsStore.load(from: url)
+        XCTAssertEqual(loaded.pace, .chill)
+        XCTAssertEqual(loaded.onScreenCount, 1)
+        XCTAssertEqual(HamsterPace.matching(onScreenCount: 3), .normal)
+        XCTAssertEqual(HamsterSettings.clamped(0), 1)
+        XCTAssertEqual(HamsterSettings.clamped(40), 8)
         try? FileManager.default.removeItem(at: directory)
     }
 

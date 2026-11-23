@@ -20,7 +20,7 @@ final class UninstallController: NSObject, NSWindowDelegate {
         asking = true
         choice = nil
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 420, height: 300),
+            contentRect: NSRect(x: 0, y: 0, width: 460, height: 320),
             styleMask: [.titled, .closable],
             backing: .buffered,
             defer: false
@@ -29,8 +29,8 @@ final class UninstallController: NSObject, NSWindowDelegate {
         window.backgroundColor = Theme.cream
         window.isReleasedWhenClosed = false
         window.delegate = self
-        let content = NSView(frame: NSRect(x: 0, y: 0, width: 420, height: 300))
-        let picture = NSImageView(frame: NSRect(x: 150, y: 150, width: 120, height: 120))
+        let content = NSView(frame: NSRect(x: 0, y: 0, width: 460, height: 320))
+        let picture = NSImageView(frame: NSRect(x: 170, y: 170, width: 120, height: 120))
         picture.imageScaling = .scaleProportionallyUpOrDown
         picture.image = ImageStore.image(named: Sprite.sad, pointSize: NSSize(width: 120, height: 120))
         content.addSubview(picture)
@@ -39,27 +39,23 @@ final class UninstallController: NSObject, NSWindowDelegate {
         question.font = Theme.font(size: 18, weight: .bold)
         question.textColor = Theme.ink
         question.alignment = .center
-        question.frame = NSRect(x: 24, y: 108, width: 372, height: 28)
+        question.frame = NSRect(x: 20, y: 118, width: 420, height: 28)
         content.addSubview(question)
 
-        let detail = NSTextField(wrappingLabelWithString: "Yes moves Software Debugger to the Trash and removes its login item and settings. The hamsters do not take anything with them.")
+        let detail = NSTextField(wrappingLabelWithString: "Yes, delete hamsters moves Software Debugger to the Trash and removes its login item and settings. No, keep them leaves everything as it is.")
         detail.font = Theme.font(size: 13, weight: .regular)
         detail.textColor = Theme.muted
         detail.alignment = .center
-        detail.frame = NSRect(x: 36, y: 58, width: 348, height: 46)
+        detail.frame = NSRect(x: 28, y: 62, width: 404, height: 52)
         content.addSubview(detail)
 
-        let no = NSButton(title: "No", target: self, action: #selector(sayNo))
-        no.bezelStyle = .rounded
-        no.font = Theme.font(size: 14, weight: .semibold)
-        no.frame = NSRect(x: 90, y: 16, width: 100, height: 32)
+        let no = LabeledButton.push("No, keep them", target: self, action: #selector(sayNo))
+        no.frame = NSRect(x: 24, y: 16, width: 180, height: 34)
         no.keyEquivalent = "\u{1b}"
         content.addSubview(no)
 
-        let yes = NSButton(title: "Yes", target: self, action: #selector(sayYes))
-        yes.bezelStyle = .rounded
-        yes.font = Theme.font(size: 14, weight: .bold)
-        yes.frame = NSRect(x: 230, y: 16, width: 100, height: 32)
+        let yes = LabeledButton.push("Yes, delete hamsters", target: self, action: #selector(sayYes), destructive: true)
+        yes.frame = NSRect(x: 220, y: 16, width: 216, height: 34)
         content.addSubview(yes)
 
         window.contentView = content

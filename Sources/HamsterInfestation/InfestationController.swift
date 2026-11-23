@@ -34,6 +34,7 @@ final class InfestationController: NSObject {
             shavingCount: settings.shavingCount,
             random: &random
         )
+        scheduler.wandererLimit = settings.onScreenCount
         if let until = settings.pausedUntil, until > now {
             scheduler.pause(for: until.timeIntervalSince(now), now: now)
         } else {
@@ -140,8 +141,15 @@ final class InfestationController: NSObject {
         keys.onMatch = { [weak self] in
             self?.uninstallWindow.ask()
         }
-        settingsWindow.pace = { [weak self] in self?.settings.pace ?? .normal }
-        settingsWindow.setPace = { [weak self] pace in self?.updatePace(pace) }
+        settingsWindow.onScreenCount = { [weak self] in self?.settings.onScreenCount ?? 3 }
+        settingsWindow.setOnScreenCount = { [weak self] count in self?.updateOnScreenCount(count) }
+        settingsWindow.saveNow = { [weak self] in
+            self?.save()
+            return "Saved."
+        }
+        settingsWindow.closeWindow = { [weak self] in
+            self?.settingsWindow.close()
+        }
         settingsWindow.isPaused = { [weak self] in
             guard let self else { return false }
             return self.scheduler.isPaused(at: Date())
@@ -176,9 +184,12 @@ final class InfestationController: NSObject {
         }
     }
 
-    private func updatePace(_ pace: HamsterPace) {
-        settings.pace = pace
-        scheduler.setPace(pace, now: Date(), random: &random)
+    private func updateOnScreenCount(_ count: Int) {
+        let clamped = HamsterSettings.clamped(count)
+        settings.onScreenCount = clamped
+        settings.pace = HamsterPace.matching(onScreenCount: clamped)
+        scheduler.wandererLimit = clamped
+        scheduler.setPace(settings.pace, now: Date(), random: &random)
         save()
         armTimer()
     }

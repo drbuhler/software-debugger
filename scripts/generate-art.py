@@ -14,7 +14,9 @@ from pathlib import Path
 
 from PIL import Image, ImageChops, ImageDraw
 
-from render_lifelike import RUN_COUNT, render_pointer, render_run_cycle
+from render_lifelike import render_pointer
+from render_peek_kawaii import render_peek_set
+from render_walking_from_art import render_frames as render_reference_run
 
 ROOT = Path(__file__).resolve().parents[1]
 RES = ROOT / "Sources" / "HamsterInfestation" / "Resources"
@@ -438,13 +440,16 @@ def main():
     RES.mkdir(parents=True, exist_ok=True)
     DOCS.mkdir(parents=True, exist_ok=True)
 
-    runners = render_run_cycle()
+    runners = render_reference_run()
+    peeks = render_peek_set()
     waves = [render_wave(i) for i in range(4)]
+    cursor_path = RES / "ui-cursor.png"
+    cursor = Image.open(cursor_path).convert("RGBA") if cursor_path.exists() else render_pointer()
     sprites = {
-        "cursor": render_pointer(),
-        "peek": render_peek("open"),
-        "peek_blink": render_peek("blink"),
-        "peek_sleep": render_peek("shut"),
+        "cursor": cursor,
+        "peek": peeks["open"],
+        "peek_blink": peeks["blink"],
+        "peek_sleep": peeks["sleep"],
         "sad": render_sad(),
         "hole": render_hole(),
         "shaving": render_shaving(),
@@ -453,7 +458,6 @@ def main():
     }
     # Bland names inside the app bundle. The comments here are the legend.
     legend = {
-        "ui-cursor.png": sprites["cursor"],          # pointer hamster
         "ui-peek.png": sprites["peek"],              # face in the chewed hole
         "ui-peek-blink.png": sprites["peek_blink"],
         "ui-peek-sleep.png": sprites["peek_sleep"],
@@ -487,7 +491,7 @@ def main():
     render_icon(256).save(DOCS / "preview-icon.png")
     preview(sprites).convert("RGB").save(DOCS / "preview-desktop.png", quality=92)
     cell_w, cell_h = runners[0].size
-    sheet(runners, RUN_COUNT, (cell_w // 2, cell_h // 2)).save(DOCS / "preview-run.png")
+    sheet(runners, len(runners), (max(1, cell_w // 2), max(1, cell_h // 2))).save(DOCS / "preview-run.png")
     sheet([sprites["peek"], sprites["peek_blink"], sprites["peek_sleep"], sprites["sad"], sprites["cursor"]], 5, (160, 160)).save(DOCS / "preview-faces.png")
     print(f"Art written to {RES}")
     print(f"Icon set written to {ICON}")

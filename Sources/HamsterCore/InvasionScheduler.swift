@@ -9,6 +9,9 @@ public struct InvasionScheduler {
     public private(set) var burrowCount: Int
     public private(set) var wandererCount: Int
     public private(set) var shavingCount: Int
+    /// When set, this is how many runners may be on screen at once.
+    /// Older schedules leave it nil and use the pace profile.
+    public var wandererLimit: Int?
     private var nextAt: [SpawnKind: Date]
     private var opened: Set<SpawnKind>
 
@@ -24,6 +27,7 @@ public struct InvasionScheduler {
         self.burrowCount = max(0, burrowCount)
         self.wandererCount = 0
         self.shavingCount = max(0, shavingCount)
+        self.wandererLimit = nil
         self.nextAt = [:]
         self.opened = []
         scheduleMissing(now: now, opening: true, replaceExisting: false, random: &random)
@@ -125,7 +129,8 @@ public struct InvasionScheduler {
         case .popup:
             return true
         case .wanderer:
-            return wandererCount < profile.maxWanderers
+            let cap = wandererLimit ?? profile.maxWanderers
+            return wandererCount < max(1, cap)
         case .burrow:
             return burrowCount < profile.maxBurrows
         case .shavings:
