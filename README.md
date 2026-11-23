@@ -96,7 +96,8 @@ The system window says Software Debugger, because that is the name of the app.
 - A small sign pops up and fades away.
 - Burrows show up on the desktop, with a few tiny cartoon pellets. They are meant to be silly, not gross.
 - Wood shavings pile up under the corner hole.
-- The corner hamster and the burrows sit on the desktop, underneath normal windows. Runners and signs float above other apps but do not block them.
+- The corner hamster stays in the top corner, in front of ordinary windows such as Notion and Chrome. Double-click it for settings. Option-click it to ask about removing the app.
+- Burrows stay on the desktop, underneath ordinary windows. Runners and signs cross in front and do not block clicks. The first runner can take a few seconds.
 
 Double-click the corner hamster to open the settings window. The title says Software Debugger.
 

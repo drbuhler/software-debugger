@@ -2,8 +2,8 @@
 import AppKit
 import HamsterCore
 
-/// The corner hamster, the growing pile of shavings, and the burrows.
-/// These sit just above the wallpaper and below ordinary windows.
+/// The corner hamster stays above ordinary app windows so it is visible while
+/// Notion or Chrome is open. Burrows stay down on the desktop.
 final class DesktopController {
     var onDoubleClick: () -> Void = {}
     var onOptionClick: () -> Void = {}
@@ -76,8 +76,9 @@ final class DesktopController {
         let window = OverlayWindow(
             frame: NSRect(x: 0, y: 0, width: 230, height: 200),
             clickThrough: false,
-            level: WindowLayers.desktop,
-            behavior: WindowLayers.onDesktop
+            level: .floating,
+            behavior: WindowLayers.aboveApps,
+            acceptsKey: false
         )
         let view = PeekView(frame: window.contentView?.bounds ?? .zero)
         view.postsFrameChangedNotifications = false
@@ -90,6 +91,10 @@ final class DesktopController {
         peekView = view
         placePeek()
         window.orderFrontRegardless()
+        // Launch can reorder windows after we do. Put the corner back on the next turn.
+        DispatchQueue.main.async { [weak window] in
+            window?.orderFrontRegardless()
+        }
     }
 
     private func placePeek() {

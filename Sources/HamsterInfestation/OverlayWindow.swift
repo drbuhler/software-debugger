@@ -28,14 +28,39 @@ enum WindowLayers {
     ]
 }
 
+/// Brings a real window forward for an app that has no Dock icon.
+/// A normal-level window in an accessory app stays behind Chrome and Notion.
+enum WindowFront {
+    static func activate() {
+        if #available(macOS 14.0, *) {
+            NSApp.activate()
+        } else {
+            NSApp.activate(ignoringOtherApps: true)
+        }
+    }
+
+    static func present(_ window: NSWindow) {
+        window.level = .floating
+        window.hidesOnDeactivate = false
+        window.collectionBehavior.formUnion([.moveToActiveSpace, .fullScreenAuxiliary])
+        activate()
+        window.makeKeyAndOrderFront(nil)
+        window.orderFrontRegardless()
+    }
+}
+
 /// A borderless window. Click-through windows never take a click from the person.
 final class OverlayWindow: NSWindow {
+    private let acceptsKey: Bool
+
     init(
         frame: NSRect,
         clickThrough: Bool,
         level: NSWindow.Level,
-        behavior: NSWindow.CollectionBehavior
+        behavior: NSWindow.CollectionBehavior,
+        acceptsKey: Bool = true
     ) {
+        self.acceptsKey = acceptsKey
         super.init(
             contentRect: frame,
             styleMask: [.borderless],
@@ -54,7 +79,7 @@ final class OverlayWindow: NSWindow {
         isMovable = false
     }
 
-    override var canBecomeKey: Bool { !ignoresMouseEvents }
+    override var canBecomeKey: Bool { acceptsKey && !ignoresMouseEvents }
     override var canBecomeMain: Bool { false }
 }
 #endif

@@ -65,8 +65,7 @@ final class UninstallController: NSObject, NSWindowDelegate {
         window.contentView = content
         window.center()
         self.window = window
-        NSApp.activate(ignoringOtherApps: true)
-        window.makeKeyAndOrderFront(nil)
+        WindowFront.present(window)
         let response = NSApp.runModal(for: window)
         window.orderOut(nil)
         self.window = nil

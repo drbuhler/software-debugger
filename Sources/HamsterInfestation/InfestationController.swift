@@ -78,8 +78,9 @@ final class InfestationController: NSObject {
                 self?.uninstallWindow.ask()
             }
         } else if !settings.explainedAccessibility {
+            settingsWindow.showIntro()
             DispatchQueue.main.async { [weak self] in
-                self?.settingsWindow.showIntro()
+                self?.settingsWindow.reassertIntro()
             }
         }
     }

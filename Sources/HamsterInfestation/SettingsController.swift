@@ -35,8 +35,13 @@ final class SettingsController: NSObject, NSWindowDelegate {
         let window = self.window ?? makeWindow()
         self.window = window
         refresh()
-        NSApp.activate(ignoringOtherApps: true)
-        window.makeKeyAndOrderFront(nil)
+        WindowFront.present(window)
+    }
+
+    /// Call again after launch. An accessory app's first ordering is sometimes dropped.
+    func reassertIntro() {
+        guard let intro, intro.isVisible else { return }
+        WindowFront.present(intro)
     }
 
     func showIntro() {
@@ -79,8 +84,7 @@ final class SettingsController: NSObject, NSWindowDelegate {
         size(column, onto: window)
         window.center()
         intro = window
-        NSApp.activate(ignoringOtherApps: true)
-        window.makeKeyAndOrderFront(nil)
+        WindowFront.present(window)
     }
 
     func refresh() {
