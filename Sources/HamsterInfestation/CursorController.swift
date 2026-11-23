@@ -1,5 +1,6 @@
 #if os(macOS)
 import AppKit
+import HamsterCore
 
 /// Draws a hamster at the pointer.
 ///

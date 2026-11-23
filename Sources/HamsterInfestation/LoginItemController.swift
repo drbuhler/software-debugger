@@ -18,6 +18,8 @@ enum LoginItemController {
             switch SMAppService.mainApp.status {
             case .enabled, .requiresApproval:
                 return true
+            case .notRegistered, .notFound:
+                break
             @unknown default:
                 break
             }
