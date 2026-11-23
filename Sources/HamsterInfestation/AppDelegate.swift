@@ -5,6 +5,18 @@ import HamsterCore
 
 @main
 final class AppDelegate: NSObject, NSApplicationDelegate {
+    /// There is no main nib, so nothing would create this delegate on its own.
+    /// Build it here and hand it to the app, or launch silently does nothing.
+    private static var shared: AppDelegate?
+
+    static func main() {
+        let app = NSApplication.shared
+        let delegate = AppDelegate()
+        shared = delegate
+        app.delegate = delegate
+        app.run()
+    }
+
     private var infestation: InfestationController?
     private var pendingURLs: [URL] = []
     /// Keeps timers from being postponed for minutes while the app has no Dock icon.
