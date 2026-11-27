@@ -206,8 +206,16 @@ private final class PeekView: NSView {
         case .blink: sprite = Sprite.peekBlink
         case .awake: sprite = Sprite.peek
         }
-        let face = ImageStore.image(named: sprite, pointSize: NSSize(width: 118, height: 110))
-        face.draw(in: NSRect(x: holeRect.midX - 59, y: holeRect.minY + 22, width: 118, height: 110))
+        // Head toward the screen (left), body tucked into the top-right hole.
+        // Low enough that the forehead, and the little z when he is napping, sit in the opening.
+        let faceSize = NSSize(width: 148, height: 142)
+        let face = ImageStore.image(named: sprite, pointSize: faceSize)
+        face.draw(in: NSRect(
+            x: holeRect.maxX - faceSize.width + 10,
+            y: holeRect.minY - 30,
+            width: faceSize.width,
+            height: faceSize.height
+        ))
 
         ImageStore.image(named: Sprite.hole, pointSize: holeSize).draw(in: holeRect)
 

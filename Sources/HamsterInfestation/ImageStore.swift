@@ -15,7 +15,7 @@ enum Sprite {
     static let burrow = "ui-burrow"
     static let popupGIF = "ui-popup"
 
-    /// Eight pre-rendered steps of one stride. See scripts/render_lifelike.py.
+    /// Eight pre-rendered steps of one stride. See scripts/render_painted_hamsters.py.
     static let runFrameCount = 8
     static func run(_ index: Int) -> String { "ui-run-\(abs(index) % runFrameCount)" }
     static func wave(_ index: Int) -> String { "ui-wave-\(abs(index) % 4)" }
@@ -86,6 +86,10 @@ enum ImageStore {
     }
 
     private static func loadPNG(named name: String) -> NSImage? {
+        // A @2x file is the sharp Retina picture. Its point size is set by the caller.
+        if let url = url(for: "\(name)@2x", ext: "png"), let image = NSImage(contentsOf: url) {
+            return image
+        }
         guard let url = url(for: name, ext: "png") else { return nil }
         return NSImage(contentsOf: url)
     }

@@ -15,8 +15,7 @@ from pathlib import Path
 from PIL import Image, ImageChops, ImageDraw
 
 from render_lifelike import render_pointer
-from render_peek_kawaii import render_peek_set
-from render_walking_from_art import render_frames as render_reference_run
+from render_painted_hamsters import make_peek, make_walk
 
 ROOT = Path(__file__).resolve().parents[1]
 RES = ROOT / "Sources" / "HamsterInfestation" / "Resources"
@@ -440,8 +439,16 @@ def main():
     RES.mkdir(parents=True, exist_ok=True)
     DOCS.mkdir(parents=True, exist_ok=True)
 
-    runners = render_reference_run()
-    peeks = render_peek_set()
+    # His painted hamsters, when those reference files are present.
+    if (ROOT / "reference" / "corner-hamster-white-bg.png").exists():
+        make_peek()
+        make_walk()
+    runners = [Image.open(RES / f"ui-run-{i}.png").convert("RGBA") for i in range(8)]
+    peeks = {
+        "open": Image.open(RES / "ui-peek.png").convert("RGBA"),
+        "blink": Image.open(RES / "ui-peek-blink.png").convert("RGBA"),
+        "sleep": Image.open(RES / "ui-peek-sleep.png").convert("RGBA"),
+    }
     waves = [render_wave(i) for i in range(4)]
     cursor_path = RES / "ui-cursor.png"
     cursor = Image.open(cursor_path).convert("RGBA") if cursor_path.exists() else render_pointer()

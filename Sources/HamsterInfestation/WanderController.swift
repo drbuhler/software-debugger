@@ -15,7 +15,7 @@ final class WanderController {
         let visible = screen.visibleFrame
         guard visible.width > 40, visible.height > 40 else { return false }
         let goingRight = Bool.random()
-        let size = NSSize(width: 220, height: 138)
+        let size = NSSize(width: 240, height: 136)
         let low = visible.minY + 20
         let high = max(low, visible.maxY - size.height - 20)
         let y = low == high ? low : CGFloat.random(in: low...high)
